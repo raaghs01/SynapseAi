@@ -1,0 +1,15 @@
+{
+  "name": "synapseai",
+  "version": "1.0.0",
+  "description": "AI-enhanced collaborative concept mapping tool",
+  "scripts": {
+    "server": "cd server && node src/index.js",
+    "server:dev": "cd server && nodemon src/index.js",
+    "client": "cd client && npm start",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client\"",
+    "install-all": "cd server && npm install && cd ../client && npm install"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
