@@ -15,12 +15,12 @@ app.use(express.static('public'));
 app.use(cookieParser());
 
 // ── Routes ──
-import userRouter from './routes/user.routes.js';
+import userRouter from './routes/auth.routes.js';
 app.use('/api/v1/users', userRouter);
 
 
-// app.get('/', (req, res) => {
-//   res.send('Hello World!');
-// });
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
 export { app };
