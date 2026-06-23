@@ -34,6 +34,12 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    forgotPasswordToken: {
+      type: String,
+    },
+    forgotPasswordTokenExpiry: {
+      type: Date,
+},
   },
   { timestamps: true }
 );
@@ -67,6 +73,18 @@ userSchema.methods.generateRefreshToken = function () {
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
   );
+};
+
+userSchema.methods.generateTemporaryToken = function () {
+    const unHashedToken = crypto.randomBytes(20).toString("hex")
+
+    const hashedToken = crypto
+        .createHash("sha256")
+        .update(unHashedToken)
+        .digest("hex")
+
+    const tokenExpiry = Date.now() + (20*60*1000) //20 mins
+    return {unHashedToken, hashedToken, tokenExpiry}
 };
 
 export const User = mongoose.model('User', userSchema);

@@ -2,6 +2,9 @@ import { asyncHandler } from '../utils/asynchandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { User } from '../models/user.model.js';
+import { sendEmail , forgotPasswordMailgenContent } from '../utils/mailer.js';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto'
 
 
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -28,8 +31,9 @@ const registerUser = asyncHandler(async (req, res) => {
     $or: [{ username }, { email }],
   });
 
+  // response like error sending via .json method 
   if (existingUser) {
-    throw new ApiError(409, 'User with this email or username already exists');
+    res.status(500).json(new ApiError(409, 'User with this email or username already exists'));
   }
 
   const user = await User.create({
@@ -160,7 +164,96 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, 'Current user fetched successfully'));
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const {hashedToken , unHashedToken , TokenExpiry} = user.generateTemporaryToken();
+  user.forgotPasswordToken = hashedToken;
+  user.forgotPasswordTokenExpiry = TokenExpiry; 
+  await user.save({ validateBeforeSave: false });
+
+  const resetUrl = `${process.env.BASE_URL}/api/v1/auth/reset-password/${unHashedToken}`;
+
+  await sendEmail({
+    email: user.email,
+    subject: 'SynapseAI Password Reset',
+    mailgenContent: forgotPasswordMailgenContent(user.fullName, resetUrl),
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'Password reset email sent'));
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { resetToken } = req.params;
+  const { newPassword } = req.body;
+
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  const user = await User.findOne({
+    forgotPasswordToken: hashedToken,
+    forgotPasswordTokenExpiry: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new ApiError(400, 'Token is invalid or has expired');
+  }
+
+  const isSamePassword = await user.isPasswordCorrect(newPassword);
+
+  if (isSamePassword) {
+    throw new ApiError(400, 'New password cannot be the same as your current password');
+  }
+
+
+  user.password = newPassword;
+  user.forgotPasswordToken = undefined;
+  user.forgotPasswordTokenExpiry = undefined;
+  await user.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'Password reset successfully'));
+});
+
+
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user._id);
+
+  const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+  const isSamePassword = await user.isPasswordCorrect(newPassword);
+
+  if (isSamePassword) {
+    throw new ApiError(400, 'New password cannot be the same as your current password');
+  }
+
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, 'Invalid old password');
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'Password changed successfully'));
+});
 
 
 
-export { registerUser , loginUser , logoutUser , refreshAccessToken , getCurrentUser};
+
+
+export { registerUser , loginUser , logoutUser , refreshAccessToken , getCurrentUser , forgotPassword , resetPassword , changePassword};

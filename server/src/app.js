@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { ApiError } from './utils/ApiError.js';
+
 
 const app = express();
 
@@ -16,8 +18,9 @@ app.use(cookieParser());
 
 // ── Routes ──
 import userRouter from './routes/auth.routes.js';
+import healthcheckRouter from './routes/healthcheck.routes.js';
 app.use('/api/v1/users', userRouter);
-
+app.use('/api/v1/users/healthcheck', healthcheckRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
