@@ -19,8 +19,8 @@ const generateAccessAndRefreshTokens = async (userId) => {
   return { accessToken, refreshToken };
 };
 
-
-const registerUser = asyncHandler(async (req, res) => {
+// -> 1)
+export const registerUser = asyncHandler(async (req, res) => {
   const { username, email, fullName, password } = req.body;
 
   if ([username, email, fullName, password].some((field) => field?.trim() === '')) {
@@ -54,7 +54,8 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, createdUser, 'User registered successfully'));
 });
 
-const loginUser = asyncHandler(async (req, res) => {
+// -> 2)
+export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -87,7 +88,7 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-const logoutUser = asyncHandler(async (req, res) => {
+export const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -108,8 +109,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, 'Logged out successfully'));
 });
 
-
-const refreshAccessToken = asyncHandler(async (req, res) => {
+// expired or changed
+export const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body.refreshToken;
 
@@ -158,13 +159,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 
-const getCurrentUser = asyncHandler(async (req, res) => {
+export const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, req.user, 'Current user fetched successfully'));
 });
 
-const forgotPassword = asyncHandler(async (req, res) => {
+export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
@@ -191,7 +192,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, 'Password reset email sent'));
 });
 
-const resetPassword = asyncHandler(async (req, res) => {
+export const resetPassword = asyncHandler(async (req, res) => {
   const { resetToken } = req.params;
   const { newPassword } = req.body;
 
@@ -227,7 +228,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 
-const changePassword = asyncHandler(async (req, res) => {
+export const changePassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   const user = await User.findById(req.user._id);
@@ -256,4 +257,4 @@ const changePassword = asyncHandler(async (req, res) => {
 
 
 
-export { registerUser , loginUser , logoutUser , refreshAccessToken , getCurrentUser , forgotPassword , resetPassword , changePassword};
+//export { registerUser , loginUser , logoutUser , refreshAccessToken , getCurrentUser , forgotPassword , resetPassword , changePassword};
