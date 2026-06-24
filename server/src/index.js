@@ -3,6 +3,8 @@ dotenv.config({ path: './.env' });
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+
+// DONE
 import connectDB from './db/index.js';
 import { app } from './app.js';
 
@@ -24,4 +26,4 @@ connectDB().then(() => {
 }).catch((error) => {
   console.error('MongoDB connection failed:', error);
   process.exit(1);
-});
+}
