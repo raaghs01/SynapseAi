@@ -174,9 +174,9 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'User not found');
   }
 
-  const {hashedToken , unHashedToken , TokenExpiry} = user.generateTemporaryToken();
+  const {hashedToken , unHashedToken , tokenExpiry} = user.generateTemporaryToken();
   user.forgotPasswordToken = hashedToken;
-  user.forgotPasswordTokenExpiry = TokenExpiry; 
+  user.forgotPasswordTokenExpiry = tokenExpiry; 
   await user.save({ validateBeforeSave: false });
 
   const resetUrl = `${process.env.BASE_URL}/api/v1/auth/reset-password/${unHashedToken}`;

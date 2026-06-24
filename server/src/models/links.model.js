@@ -10,18 +10,13 @@ const linkSchema = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
+      default: '',
     },
-    owner: {
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    members: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
     boards: [
       {
         type: mongoose.Schema.Types.ObjectId,

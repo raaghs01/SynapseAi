@@ -20,7 +20,7 @@ app.use(cookieParser());
 import userRouter from './routes/auth.routes.js';
 import healthcheckRouter from './routes/healthcheck.routes.js';
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/users/healthcheck', healthcheckRouter);
+app.use('/api/v1/healthcheck', healthcheckRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

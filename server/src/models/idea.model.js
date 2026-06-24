@@ -15,17 +15,45 @@ const ideaSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    inspiration: {
-      type: String,
-      trim: true,
-    },
     github_link: {
       type: String,
       trim: true,
     },
-    image: {
-      type: String,
+    images: [
+      {
+        type: String,
+      },
+    ],
+    progress: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
     },
+    guidingPoints: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    additionalPoints: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    constraints: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    contributors: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     likes: {
       type: Number,
       default: 0,
