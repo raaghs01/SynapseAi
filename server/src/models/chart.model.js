@@ -22,8 +22,8 @@ const graphEdgeSchema = new mongoose.Schema({
   target: { type: String, required: true },
   label: { type: String, default: '' },
   isAISuggested: { type: Boolean, default: false },
-  confidence: { type: Number, default: 1.0 },
-  accepted: { type: Boolean, default: true },
+  confidence: { type: Number, default: 0.0 },
+  accepted: { type: Boolean, default: false },
 });
 
 const chartSchema = new mongoose.Schema(

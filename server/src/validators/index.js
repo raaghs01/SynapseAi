@@ -93,4 +93,92 @@ export const userResetForgotPasswordValidator = () => {
   .withMessage("Password must contain at least one number")];
 };
 
+
+// import { body } from 'express-validator';
+
+export const createBoardValidator = () => [
+  body('title')
+    .trim()
+    .notEmpty()
+    .withMessage('Board title is required'),
+  body('description')
+    .optional()
+    .trim(),
+];
+
+export const updateBoardValidator = () => [
+  body('title')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Title cannot be empty'),
+  body('description')
+    .optional()
+    .trim(),
+];
+
+// import { body } from 'express-validator';
+
+export const createChartValidator = () => [
+  body('title')
+    .trim()
+    .notEmpty()
+    .withMessage('Chart title is required'),
+  body('description')
+    .optional()
+    .trim(),
+];
+
+export const updateChartValidator = () => [
+  body('title')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Title cannot be empty'),
+  body('description')
+    .optional()
+    .trim(),
+];
+
+
+export const createIdeaValidator = () => [
+  body('topic')
+    .trim()
+    .notEmpty()
+    .withMessage('Topic is required'),
+  body('description').optional().trim(),
+  body('idea_space').optional().trim(),
+  body('github_link').optional().trim().isURL().withMessage('Invalid GitHub link'),
+  body('progress')
+    .optional()
+    .isInt({ min: 0, max: 100 })
+    .withMessage('Progress must be between 0 and 100'),
+  body('guidingPoints').optional().isArray(),
+  body('additionalPoints').optional().isArray(),
+  body('constraints').optional().isArray(),
+];
+
+export const updateIdeaValidator = () => [
+  body('topic').optional().trim().notEmpty().withMessage('Topic cannot be empty'),
+  body('description').optional().trim(),
+  body('idea_space').optional().trim(),
+  body('github_link').optional().trim().isURL().withMessage('Invalid GitHub link'),
+  body('progress')
+    .optional()
+    .isInt({ min: 0, max: 100 })
+    .withMessage('Progress must be between 0 and 100'),
+  body('guidingPoints').optional().isArray(),
+  body('additionalPoints').optional().isArray(),
+  body('constraints').optional().isArray(),
+];
+
+// export { createChartValidator, updateChartValidator };
+
+
+// export { createBoardValidator, updateBoardValidator };
+
+
+// export { createBoardValidator };
+
+
 // export { registerUserValidator, loginUserValidator , userChangeCurrentPasswordValidator , userResetForgotPasswordValidator , userForgotPasswordValidator};

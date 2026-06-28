@@ -26,8 +26,4 @@ connectDB().then(() => {
 }).catch((error) => {
   console.error('MongoDB connection failed:', error);
   process.exit(1);
-<<<<<<< HEAD
 })
-=======
-}
->>>>>>> ad079c7c15916a9fef37182c38d398225cedcf93

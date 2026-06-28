@@ -1,6 +1,7 @@
-import mongoose from 'mongoose';
+import mongoose , {Schema} from 'mongoose';
 
-const linkSchema = new mongoose.Schema(
+const linkSchema = new Schema(
+  // name and desc required for the dashboard on which all the links for a single user will be listed
   {
     name: {
       type: String,
@@ -13,16 +14,23 @@ const linkSchema = new mongoose.Schema(
       default: '',
     },
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
+    // link can be created by empty boards 
     boards: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Board',
+        // required: true,
       },
     ],
+    inviteCode: {
+      type: String,
+      unique: true,
+    },
+
   },
   { timestamps: true }
 );

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { UserRolesEnum, AvailableUserRoles } from '../constants.js';
+import { UserRolesEnum, AvailableUserRoles } from '../utils/constants.js';
 
 const linkMemberSchema = new mongoose.Schema(
   {
@@ -21,7 +21,7 @@ const linkMemberSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
+// for every user there should 1 role per workspace to fast execution of the query .findOne
 linkMemberSchema.index({ link: 1, user: 1 }, { unique: true });
 linkMemberSchema.index({ user: 1 });
 
