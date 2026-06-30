@@ -1,0 +1,510 @@
+{
+  "info": {
+    "_postman_id": "f3a2c1d4-8e5b-4f6a-9c7d-2b1e3f4a5c6d",
+    "name": "SynapseAi",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "linkId", "value": "" },
+    { "key": "boardId", "value": "" },
+    { "key": "chartId", "value": "" },
+    { "key": "ideaId", "value": "" },
+    { "key": "resetToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"fullName\": \"Raghav Chugh\",\n\t\"username\": \"raghav01\",\n\t\"email\": \"raghav@example.com\",\n\t\"password\": \"Raghav@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"email\": \"raghav@example.com\",\n\t\"password\": \"Raghav@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/getCurrentUser",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "getCurrentUser"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/refreshAccessToken",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "refreshAccessToken"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "forgot-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"email\": \"raghav@example.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/reset-password/{{resetToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "reset-password", "{{resetToken}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"newPassword\": \"NewPass@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "change-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"oldPassword\": \"Raghav@123\",\n\t\"newPassword\": \"NewPass@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Healthcheck",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/healthcheck",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "healthcheck"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Links",
+      "item": [
+        {
+          "name": "Create Link",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"name\": \"My Workspace\",\n\t\"description\": \"My first SynapseAI workspace\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Links",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Join Link",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "join"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"inviteCode\": \"abc12345\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Link By Id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Link",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Boards",
+      "item": [
+        {
+          "name": "Create Board",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"title\": \"Sprint 1\",\n\t\"description\": \"First sprint board\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Boards",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Board By Id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Board",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"title\": \"Updated Sprint 1\",\n\t\"description\": \"Updated description\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Board",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Charts",
+      "item": [
+        {
+          "name": "Create Chart",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"title\": \"ML Concepts\",\n\t\"description\": \"Machine Learning concept map\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Charts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Chart By Id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Graph",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}/sync",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}", "sync"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"graphNodes\": [\n\t\t{\n\t\t\t\"nodeId\": \"node-1\",\n\t\t\t\"label\": \"Machine Learning\",\n\t\t\t\"x\": 120,\n\t\t\t\"y\": 200,\n\t\t\t\"color\": \"#6366f1\",\n\t\t\t\"size\": 24,\n\t\t\t\"isAIGenerated\": false\n\t\t}\n\t],\n\t\"graphEdges\": []\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Chart",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ideas",
+      "item": [
+        {
+          "name": "Create Idea",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}/ideas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}", "ideas"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "topic", "value": "Neural Networks", "type": "text" },
+                { "key": "description", "value": "Deep learning fundamentals", "type": "text" },
+                { "key": "progress", "value": "30", "type": "text" },
+                { "key": "guidingPoints[0]", "value": "What is a neuron?", "type": "text" },
+                { "key": "guidingPoints[1]", "value": "Activation functions", "type": "text" },
+                { "key": "nodeId", "value": "node-1", "type": "text" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Ideas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}/ideas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}", "ideas"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Idea By Id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}/ideas/{{ideaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}", "ideas", "{{ideaId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Idea",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}/ideas/{{ideaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}", "ideas", "{{ideaId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"topic\": \"Updated Neural Networks\",\n\t\"progress\": 60\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Idea",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "auth-token", "value": "{{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/links/{{linkId}}/boards/{{boardId}}/charts/{{chartId}}/ideas/{{ideaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "links", "{{linkId}}", "boards", "{{boardId}}", "charts", "{{chartId}}", "ideas", "{{ideaId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

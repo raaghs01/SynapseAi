@@ -26,4 +26,5 @@ const boardSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+boardSchema.index({title:1 ,link:1},{unique:true});
 export const Board = mongoose.model('Board', boardSchema);

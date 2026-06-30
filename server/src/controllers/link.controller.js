@@ -16,6 +16,12 @@ const generateInviteCode = () => {
 const createLink = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
+    // uniqueness check per user
+  const existing = await Link.findOne({ name, createdBy: req.user._id });
+  if (existing) {
+    throw new ApiError(409, 'You already have a workspace with this name');
+  }
+
   if (!name?.trim()) {
     throw new ApiError(400, 'Workspace name is required');
   }
@@ -24,7 +30,7 @@ const createLink = asyncHandler(async (req, res) => {
     name,
     description: description || '',
     createdBy: req.user._id,
-    inviteCode:generateInviteCode
+    inviteCode:generateInviteCode()
   });
 
   await LinkMember.create({
@@ -42,10 +48,15 @@ const getMyLinks = asyncHandler(async (req, res) => {
   const memberships = await LinkMember.find({ user: req.user._id })
     .populate('link', 'name description createdBy boards createdAt');
 
-  const links = memberships.map((membership) => ({
-    ...membership.link.toObject(),
-    role: membership.role,
-  }));
+  const links = memberships
+    .filter((membership) => membership.link !== null)
+    .map((membership) => ({
+      ...membership.link.toObject(),
+      role: membership.role,
+    }));
+  
+
+  
 
   return res
     .status(200)
@@ -114,4 +125,4 @@ const deleteLink = asyncHandler(async (req, res) => {
 
 
 
-export { createLink , getMyLinks, getLinkById , joinLink , deleteLink };
+export {generateInviteCode, createLink , getMyLinks, getLinkById , joinLink , deleteLink };

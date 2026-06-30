@@ -7,8 +7,13 @@ import { Link } from '../models/links.model.js';
 const createBoard = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
 
+  const existing = await Board.findOne({ title, link: req.link._id });
+    if (existing) {
+      throw new ApiError(409, 'A board with this title already exists in this workspace');
+    }
+    
   const board = await Board.create({
-    title,
+    title ,
     description: description || '',
     link: req.link._id,
   });

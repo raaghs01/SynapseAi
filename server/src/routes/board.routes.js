@@ -8,7 +8,10 @@ import { createBoard, getBoards, getBoardById, deleteBoard , updateBoard} from '
 
 // One important thing — mergeParams: true:
 
-// Board routes are nested under link routes (/api/v1/links/:linkId/boards). By default, a child router can't see the parent's params — req.params.linkId would be undefined in board routes. mergeParams: true merges the parent params into the child router so verifyLinkAccess can read req.params.linkId.
+// Board routes are nested under link routes (/api/v1/links/:linkId/boards). By default,
+//  a child router can't see the parent's params — req.params.linkId would be undefined in 
+// board routes. mergeParams: true merges the parent params into the child router so verifyLinkAccess
+//  can read req.params.linkId.
 const router = Router({ mergeParams: true });
 
 

@@ -7,6 +7,7 @@ const linkSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+      
     },
     description: {
       type: String,
@@ -34,5 +35,5 @@ const linkSchema = new Schema(
   },
   { timestamps: true }
 );
-
+linkSchema.index({ name: 1, createdBy: 1 }, { unique: true });
 export const Link = mongoose.model('Link', linkSchema);

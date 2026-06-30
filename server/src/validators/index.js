@@ -94,6 +94,29 @@ export const userResetForgotPasswordValidator = () => {
 };
 
 
+export const createLinkValidator = () => [
+  body('name')
+    .trim()
+    .notEmpty()
+    .withMessage('Workspace name is required'),
+    
+  body('description')
+    .optional()
+    .trim(),
+];
+
+export const updateLinkValidator = () => [
+  body('name')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Workspace name cannot be empty'),
+  body('description')
+    .optional()
+    .trim(),
+];
+
+
 // import { body } from 'express-validator';
 
 export const createBoardValidator = () => [
