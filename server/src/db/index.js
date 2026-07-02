@@ -11,4 +11,4 @@ const connectDB = async () => {
    // no need to apply try and catch
 }
 
-export default connectDB;
+export {connectDB};

@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
+import { Chart } from '../models/chart.model.js';
+import { LinkMember } from '../models/linkMembers.model.js';
 
 export const initSocket = (io) => {
 
@@ -28,7 +30,24 @@ export const initSocket = (io) => {
   io.on('connection', (socket) => {
     console.log(`Connected: ${socket.user.username}`);
 
-    socket.on('join-chart', (chartId) => {
+    const hasChartAccess = async (chartId) => {
+      const chart = await Chart.findById(chartId).populate('board');
+      if (!chart || !chart.board) return false;
+
+      const membership = await LinkMember.findOne({
+        link: chart.board.link,
+        user: socket.user._id,
+      });
+
+      return !!membership;
+    };
+
+    socket.on('join-chart', async (chartId) => {
+      const allowed = await hasChartAccess(chartId);
+      if (!allowed) {
+        return socket.emit('error', { message: 'You do not have access to this chart' });
+      }
+
       socket.join(chartId);
 
       socket.to(chartId).emit('user-joined', {
@@ -48,6 +67,8 @@ export const initSocket = (io) => {
     });
 
     socket.on('graph-updated', ({ chartId, graphNodes, graphEdges }) => {
+      if (!socket.rooms.has(chartId)) return;
+
       socket.to(chartId).emit('graph-updated', {
         graphNodes,
         graphEdges,
@@ -59,6 +80,8 @@ export const initSocket = (io) => {
     });
 
     socket.on('cursor-move', ({ chartId, x, y }) => {
+      if (!socket.rooms.has(chartId)) return;
+
       socket.to(chartId).emit('cursor-move', {
         userId: socket.user._id,
         username: socket.user.username,

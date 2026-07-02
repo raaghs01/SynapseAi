@@ -3,9 +3,9 @@ dotenv.config();
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { app } from './src/app.js';
-import { connectDB } from './src/db/index.js';
-import { initSocket } from './src/sockets/handlers.js';
+import { app } from './app.js';
+import { connectDB } from './db/index.js';
+import { initSocket } from './sockets/handlers.js';
 
 const httpServer = createServer(app);
 
