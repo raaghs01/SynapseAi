@@ -124,15 +124,19 @@ const updateIdea = asyncHandler(async (req, res) => {
     ...(constraints && { constraints }),
   };
 
-  if (newImageUrls.length > 0) {
-    updateFields.$push = { images: { $each: newImageUrls } };
-  }
+  const updatePayload = {
+  $set: updateFields
+  };
 
-  const idea = await Idea.findOneAndUpdate(
-    { _id: ideaId, chart: req.chart._id },
-    { $set: updateFields },
-    { new: true, runValidators: true }
-  );
+if (newImageUrls.length > 0) {
+  updatePayload.$push = { images: { $each: newImageUrls } };
+}
+
+const idea = await Idea.findOneAndUpdate(
+  { _id: ideaId, chart: req.chart._id },
+  updatePayload, // Pass the clean structure directly
+  { new: true, runValidators: true }
+);
 
   if (!idea) {
     throw new ApiError(404, 'Idea not found');
@@ -160,10 +164,38 @@ const deleteIdea = asyncHandler(async (req, res) => {
     $pull: { ideas: idea._id },
   });
 
-  await Chart.findOneAndUpdate(
-    { _id: req.chart._id, 'graphNodes.ideaRef': idea._id },
-    { $set: { 'graphNodes.$.ideaRef': null } }
+  // Find the node so we know its nodeId (edges reference nodes by nodeId, not _id)
+  const chart = await Chart.findById(req.chart._id);
+  const node = chart.graphNodes.find(
+    (n) => n.ideaRef?.toString() === idea._id.toString()
   );
+
+  if (node) {
+    await Chart.findByIdAndUpdate(req.chart._id, {
+      $pull: {
+        graphNodes: { ideaRef: idea._id },                       // remove the node
+        graphEdges: { $or: [                                     // remove its edges
+          { source: node.nodeId },
+          { target: node.nodeId },
+        ]},
+      },
+    });
+  }
+
+  // Tell other collaborators viewing this chart to drop the node + its edges.
+  // A surgical delta (nodeId only) — NOT the full graph — so it composes with
+  // each client's unsaved local changes instead of overwriting them.
+  const io = req.app.get('io');
+  if (io) {
+    io.to(req.chart._id.toString()).emit('node-removed', {
+      ideaId: idea._id,
+      nodeId: node?.nodeId ?? null,
+      removedBy: {
+        userId: req.user._id,
+        username: req.user.username,
+      },
+    });
+  }
 
   return res
     .status(200)

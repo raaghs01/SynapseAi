@@ -2,9 +2,9 @@ import { asyncHandler } from '../utils/asynchandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { User } from '../models/user.model.js';
-import { sendEmail , forgotPasswordMailgenContent } from '../utils/mailer.js';
+import { forgotPasswordMailgenContent, sendEmail } from '../utils/mailer.js';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto'
+import crypto from 'crypto';
 
 
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -77,6 +77,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   };
 
   return res
@@ -84,7 +85,8 @@ export const loginUser = asyncHandler(async (req, res) => {
     .cookie('accessToken', accessToken, cookieOptions)
     .cookie('refreshToken', refreshToken, cookieOptions)
     .json(
-      new ApiResponse(200, { user: loggedInUser, accessToken }, 'Login successful')
+      new ApiResponse(200, { user: loggedInUser,
+        accessToken, refreshToken  }, 'Login successful')
     );
 });
 
@@ -100,6 +102,7 @@ export const logoutUser = asyncHandler(async (req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   };
 
   return res
@@ -143,6 +146,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   };
 
   return res
@@ -179,7 +183,9 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   user.forgotPasswordTokenExpiry = tokenExpiry; 
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${process.env.BASE_URL}/api/v1/auth/reset-password/${unHashedToken}`;
+  // Must point at the frontend page, not the API: the reset endpoint is a POST,
+  // and the user reaches it by submitting the form this page renders.
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${unHashedToken}`;
 
   await sendEmail({
     email: user.email,
@@ -210,6 +216,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Token is invalid or has expired');
   }
 
+  // unique functionality
   const isSamePassword = await user.isPasswordCorrect(newPassword);
 
   if (isSamePassword) {
@@ -220,7 +227,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   user.password = newPassword;
   user.forgotPasswordToken = undefined;
   user.forgotPasswordTokenExpiry = undefined;
-  await user.save();
+  await user.save({validateBeforeSave:false});
 
   return res
     .status(200)
@@ -253,8 +260,3 @@ export const changePassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, 'Password changed successfully'));
 });
 
-
-
-
-
-//export { registerUser , loginUser , logoutUser , refreshAccessToken , getCurrentUser , forgotPassword , resetPassword , changePassword};

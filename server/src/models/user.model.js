@@ -25,9 +25,9 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    avatar: {
-      type: String,
-    },
+    // avatar: {
+    //   type: String,
+    // },
     password: {
       type: String,
       required: [true, 'Password is required'],
@@ -41,8 +41,7 @@ const userSchema = new mongoose.Schema(
     forgotPasswordTokenExpiry: {
       type: Date,
 },
-  },
-  { timestamps: true }
+  },{ timestamps: true }
 );
 
 userSchema.pre('save', async function (next) {
@@ -77,15 +76,10 @@ userSchema.methods.generateRefreshToken = function () {
 };
 
 userSchema.methods.generateTemporaryToken = function () {
-    const unHashedToken = crypto.randomBytes(20).toString("hex")
-
-    const hashedToken = crypto
-        .createHash("sha256")
-        .update(unHashedToken)
-        .digest("hex")
-
-    const tokenExpiry = Date.now() + (20*60*1000) //20 mins
-    return {unHashedToken, hashedToken, tokenExpiry}
+  const unHashedToken = crypto.randomBytes(20).toString("hex")
+  const hashedToken = crypto.createHash("sha256").update(unHashedToken).digest("hex")
+  const tokenExpiry = Date.now() + (20*60*1000) //20 mins
+  return {unHashedToken, hashedToken, tokenExpiry}
 };
 
 export const User = mongoose.model('User', userSchema);

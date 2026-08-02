@@ -5,3 +5,9 @@ const asyncHandler = (requestHandler) => {
 };
 
 export { asyncHandler };
+
+// function asyncHandler(requestHandler){
+//   return function x(req, res, next){
+
+//   }
+// }

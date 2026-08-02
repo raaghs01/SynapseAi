@@ -1,11 +1,12 @@
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:8000', {
+const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:8000', {
   autoConnect: false,
-  auth: (cb) => {
-    const token = localStorage.getItem('accessToken');
-    cb({ token });
-  },
+  // Send the httpOnly auth cookie with the handshake; the server reads it there.
+  withCredentials: true,
 });
+
+
+
 
 export default socket;

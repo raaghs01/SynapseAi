@@ -1,2 +1,10 @@
 node_modules/
-SynapseAi.postman_collection.json
+.env
+.env.local
+.env.*.local
+*.log
+dist/
+public/temp/*
+!public/temp/.gitkeep
+server.zip
+.DS_Store

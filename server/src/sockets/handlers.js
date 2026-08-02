@@ -5,9 +5,24 @@ import { LinkMember } from '../models/linkMembers.model.js';
 
 export const initSocket = (io) => {
 
+  // Minimal cookie-header parser — avoids depending on the transitive `cookie`
+  // package. "a=1; b=2" → { a: '1', b: '2' }.
+  const parseCookies = (header = '') =>
+    header.split(';').reduce((acc, part) => {
+      const idx = part.indexOf('=');
+      if (idx === -1) return acc;
+      const key = part.slice(0, idx).trim();
+      const val = part.slice(idx + 1).trim();
+      if (key) acc[key] = decodeURIComponent(val);
+      return acc;
+    }, {});
+
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token;
+      // Auth token now rides in the httpOnly cookie sent with the handshake.
+      // Fall back to handshake.auth.token so Postman/manual testing still works.
+      const cookies = parseCookies(socket.handshake.headers.cookie);
+      const token = cookies.accessToken || socket.handshake.auth?.token;
 
       if (!token) {
         return next(new Error('Authentication required'));
