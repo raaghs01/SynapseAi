@@ -22,6 +22,7 @@ import axiosInstance from '../api/axiosInstance';
 import socket from '../utils/socket';
 import useAuthStore from '../store/useAuthStore';
 import Modal from '../components/Modal';
+import IdeaPanel from '../components/IdeaPanel';
 
 // ─── Converters ───────────────────────────────────────────────────────────────
 // These two functions translate between MongoDB schema shape and ReactFlow shape.
@@ -31,7 +32,14 @@ const dbNodeToRF = (n) => ({
   id: n.nodeId,
   type: 'synapse',
   position: { x: n.x, y: n.y },
-  data: { label: n.label, color: n.color || '#6366f1', isAIGenerated: n.isAIGenerated },
+  // ideaRef comes back populated ({ _id, topic, ... }) from getChartById, or as a
+  // raw ObjectId, or null. Normalise to just the id string so we can round-trip it.
+  data: {
+    label: n.label,
+    color: n.color || '#6366f1',
+    isAIGenerated: n.isAIGenerated,
+    ideaRef: n.ideaRef?._id || n.ideaRef || null,
+  },
 });
 
 const dbEdgeToRF = (e) => ({
@@ -54,6 +62,8 @@ const rfNodesToDB = (nodes) =>
     y: n.position.y,
     color: n.data.color || '#6366f1',
     isAIGenerated: n.data.isAIGenerated || false,
+    // Preserve the idea link — without this, every Save would wipe ideaRef to null.
+    ideaRef: n.data.ideaRef || null,
   }));
 
 const rfEdgesToDB = (edges) =>
@@ -75,10 +85,17 @@ const rfEdgesToDB = (edges) =>
 const SynapseNode = ({ data, selected }) => (
   <div
     style={{ background: data.color || '#6366f1' }}
-    className={`px-4 py-2 rounded-full text-white text-sm font-medium min-w-[80px] text-center select-none transition-all ${
+    className={`relative px-4 py-2 rounded-full text-white text-sm font-medium min-w-[80px] text-center select-none transition-all ${
       selected ? 'ring-2 ring-white ring-offset-2 ring-offset-gray-950 shadow-lg' : ''
     }`}
   >
+    {/* Green dot marks a node that has an idea attached */}
+    {data.ideaRef && (
+      <span
+        title="Has idea details"
+        className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-gray-950"
+      />
+    )}
     {/* Top handle = receives connections coming in from above */}
     <Handle
       type="target"
@@ -136,6 +153,9 @@ const Chart = () => {
   const [newNodeLabel, setNewNodeLabel] = useState('');
   const [newNodeColor, setNewNodeColor] = useState('#6366f1');
   const [clickPosition, setClickPosition] = useState({ x: 250, y: 250 });
+
+  // Idea detail panel — holds the id of the node whose idea is being viewed/edited
+  const [ideaPanelNodeId, setIdeaPanelNodeId] = useState(null);
 
   // AI panel state
   const [aiLoading, setAiLoading] = useState(false);
@@ -311,6 +331,31 @@ const Chart = () => {
     setNewNodeColor('#6366f1');
   };
 
+  // ── Idea detail panel ────────────────────────────────────────────────────
+  // Double-click a node → open its idea (or a create form if it has none)
+  const onNodeDoubleClick = useCallback((_event, node) => {
+    setIdeaPanelNodeId(node.id);
+  }, []);
+
+  // After creating an idea, tag the node locally so the indicator shows and the
+  // link survives the next Save (rfNodesToDB now carries ideaRef).
+  const handleIdeaCreated = useCallback((nodeId, ideaId) => {
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === nodeId ? { ...n, data: { ...n.data, ideaRef: ideaId } } : n
+      )
+    );
+    setTimeout(broadcastGraph, 0);
+  }, [setNodes, broadcastGraph]);
+
+  // deleteIdea also removes the node + its edges server-side (and broadcasts
+  // node-removed to others), so mirror that locally for the acting user.
+  const handleIdeaDeleted = useCallback((nodeId) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+    setIdeaPanelNodeId(null);
+  }, [setNodes, setEdges]);
+
   // ── Track selection for AI panel ─────────────────────────────────────────
   const onSelectionChange = useCallback(({ nodes: selected }) => {
     const ids = selected.map((n) => n.id);
@@ -451,6 +496,11 @@ const Chart = () => {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  // The node whose idea panel is open (derived from id so it tracks node updates)
+  const ideaPanelNode = ideaPanelNodeId
+    ? nodes.find((n) => n.id === ideaPanelNodeId) || null
+    : null;
+
   if (isLoading) {
     return (
       <div className="h-screen bg-gray-950 flex items-center justify-center">
@@ -474,7 +524,7 @@ const Chart = () => {
           <div>
             <h1 className="text-white font-semibold text-sm">{chart?.title}</h1>
             <p className="text-gray-500 text-xs hidden sm:block">
-              Double-click canvas to add node · Drag handle to connect · Delete key to remove
+              Double-click canvas to add node · Double-click a node for details · Drag handle to connect · Delete key to remove
             </p>
           </div>
         </div>
@@ -540,6 +590,7 @@ const Chart = () => {
             onNodeDragStop={onNodeDragStop}
             onNodesDelete={onNodesDelete}
             onEdgesDelete={onEdgesDelete}
+            onNodeDoubleClick={onNodeDoubleClick}
             onSelectionChange={onSelectionChange}
             onInit={(instance) => { reactFlowInstance.current = instance; }}
             nodeTypes={nodeTypes}
@@ -759,6 +810,18 @@ const Chart = () => {
           </button>
         </form>
       </Modal>
+
+      {/* ── Idea Detail Panel ─────────────────────────────────────────────── */}
+      {ideaPanelNode && (
+        <IdeaPanel
+          key={ideaPanelNode.id}
+          node={ideaPanelNode}
+          basePath={`/links/${linkId}/boards/${boardId}/charts/${chartId}`}
+          onCreated={handleIdeaCreated}
+          onDeleted={handleIdeaDeleted}
+          onClose={() => setIdeaPanelNodeId(null)}
+        />
+      )}
     </div>
   );
 };

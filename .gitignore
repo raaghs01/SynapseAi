@@ -8,3 +8,4 @@ public/temp/*
 !public/temp/.gitkeep
 server.zip
 .DS_Store
+server/.env
